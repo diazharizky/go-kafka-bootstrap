@@ -28,6 +28,9 @@ func (handler *userRegistrationsHandler) RegisterConsumer(handlerConsumer app.IH
 }
 
 func (handler userRegistrationsHandler) Listen(sigterm <-chan os.Signal) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	partitions, err := handler.consumer.Partitions(handler.topic)
 	if err != nil {
 		log.Printf("Error unable to get partitions: %v\n", err)
@@ -38,9 +41,6 @@ func (handler userRegistrationsHandler) Listen(sigterm <-chan os.Signal) {
 	for part := range partitions {
 		go handler.transportMessage(int32(part), msgChan)
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	log.Println("UserRegistrationsHandler is listening!")
 
